@@ -231,10 +231,10 @@
 .entry { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .entry .btn { width: 100%; }
 .tk-times { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; text-align: center; margin-bottom: 16px; }
-.tk-times span { display: block; font-size: 13px; color: var(--text-muted); }
+.tk-times > div > span { display: block; font-size: 13px; color: var(--text-muted); }
 .tk-times b { display: block; font: 600 24px/1.2 var(--font-display); margin-top: 2px; }
 .tk-times small { display: block; font-size: 13px; color: var(--text-secondary); margin-top: 1px; }
-.tk-arrow { color: var(--text-muted); font-size: 20px; }
+.tk-arrow { padding: 0 12px; font: 400 22px/1 var(--font-text); color: var(--text-muted); }
 .tk-card .btn.secondary svg { color: var(--text); }
 /* Отмена — внизу экрана, у большого пальца и подальше от пропуска: её не нажмут случайно у ворот */
 .tk-cancel { margin-top: auto; padding: 22px 16px 0; text-align: center; }
