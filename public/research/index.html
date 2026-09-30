@@ -131,11 +131,11 @@
   /* Черновик → финал: пары кадров на тёмной подложке, как слайды */
   .pairs { max-width: var(--wide); margin: 28px auto 0; padding: 0 20px; display: grid; gap: 48px; }
   .pair { margin: 0; }
-  /* Сравнение: оба кадра в одном телефоне, слева от ручки черновик, справа финал */
-  .pair-shots { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 28px 20px; background: var(--band); border-radius: 8px; }
-  .pcmp { --x: 50%; position: relative; width: 100%; max-width: 300px; aspect-ratio: 723 / 1568; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: ew-resize; }
+  /* Сравнение: оба кадра в одном телефоне, слева от линии черновик, справа финал. Линия ходит по всей плашке */
+  .pair-shots { --x: 50%; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 28px 20px; background: var(--band); border-radius: 8px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: ew-resize; }
+  .pcmp { --clip: 50%; position: relative; width: 100%; max-width: 300px; aspect-ratio: 723 / 1568; }
   .pcmp img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; }
-  .pcmp-was { clip-path: inset(0 calc(100% - var(--x)) 0 0); }
+  .pcmp-was { clip-path: inset(0 calc(100% - var(--clip)) 0 0); }
   .pcmp-bar { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12); pointer-events: none; }
   .pcmp-knob { position: absolute; top: 50%; left: var(--x); width: 42px; height: 42px; margin: -21px 0 0 -21px; border: 0; border-radius: 50%; background: #fff; color: var(--text); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); display: grid; place-items: center; cursor: ew-resize; padding: 0; font: 600 16px/1 inherit; letter-spacing: 2px; }
   .pcmp-knob:focus-visible { outline: 2px solid var(--volt); outline-offset: 3px; }
@@ -562,10 +562,10 @@
         <div class="pcmp">
           <img class="pcmp-now" src="img/ui/pair-plan-now.png" alt="Финал плана: время у кнопки в шторке, этажи внизу карты, тонкая линия пути" loading="lazy" width="723" height="1568">
           <img class="pcmp-was" src="img/ui/pair-plan-was.png" alt="Черновик плана: плашка с датой и временем сверху, стрелки на проездах, кнопка на всю ширину" loading="lazy" width="723" height="1568">
-          <span class="pcmp-bar" aria-hidden="true"></span>
-          <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
         </div>
         <div class="pcmp-labels" aria-hidden="true"><span>Черновик</span><span>Финал</span></div>
+        <span class="pcmp-bar" aria-hidden="true"></span>
+        <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
       </div>
       <figcaption>
         <h4>План</h4>
@@ -582,10 +582,10 @@
         <div class="pcmp">
           <img class="pcmp-now" src="img/ui/pair-time-now.png" alt="Финал шторки даты и времени: у графика подпись, выбранные часы на подложке с числом мест" loading="lazy" width="723" height="1568">
           <img class="pcmp-was" src="img/ui/pair-time-was.png" alt="Черновик шторки даты и времени: график без подписей" loading="lazy" width="723" height="1568">
-          <span class="pcmp-bar" aria-hidden="true"></span>
-          <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
         </div>
         <div class="pcmp-labels" aria-hidden="true"><span>Черновик</span><span>Финал</span></div>
+        <span class="pcmp-bar" aria-hidden="true"></span>
+        <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
       </div>
       <figcaption>
         <h4>Дата и время</h4>
@@ -601,10 +601,10 @@
         <div class="pcmp">
           <img class="pcmp-now" src="img/ui/pair-ticket-now.png" alt="Финал пропуска: весь экран зелёный, крупный QR, билет с линией отрыва, отмена внизу" loading="lazy" width="723" height="1568">
           <img class="pcmp-was" src="img/ui/pair-ticket-was.png" alt="Черновик пропуска: зелёная только шапка, маленький QR, отмена сразу под карточкой" loading="lazy" width="723" height="1568">
-          <span class="pcmp-bar" aria-hidden="true"></span>
-          <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
         </div>
         <div class="pcmp-labels" aria-hidden="true"><span>Черновик</span><span>Финал</span></div>
+        <span class="pcmp-bar" aria-hidden="true"></span>
+        <button type="button" class="pcmp-knob" role="slider" aria-label="Черновик или финал" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="Поровну"><span aria-hidden="true">‹ ›</span></button>
       </div>
       <figcaption>
         <h4>Пропуск</h4>
@@ -842,29 +842,32 @@ document.querySelectorAll('.media').forEach((box) => {
   })()
 </script>
 <script>
-  // Сравнение черновика и финала: тянуть ручку, тап по кадру, стрелки на клавиатуре
+  // Сравнение черновика и финала: линию тянут по всей плашке, тап переносит её, стрелки на клавиатуре
   document.querySelectorAll('.pcmp').forEach(cmp => {
-    const knob = cmp.querySelector('.pcmp-knob')
-    const labels = cmp.nextElementSibling.children
-    const set = v => {
-      v = Math.max(0, Math.min(100, v))
-      cmp.style.setProperty('--x', v + '%')
+    const band = cmp.parentElement
+    const knob = band.querySelector('.pcmp-knob')
+    const labels = band.querySelector('.pcmp-labels').children
+    let v = 50
+    const set = n => {
+      v = Math.max(0, Math.min(100, n))
+      const br = band.getBoundingClientRect(), pr = cmp.getBoundingClientRect()
+      const px = br.width * v / 100 - (pr.left - br.left)
+      band.style.setProperty('--x', v + '%')
+      cmp.style.setProperty('--clip', Math.max(0, Math.min(pr.width, px)) + 'px')
+      const share = pr.width ? px / pr.width : 0.5
       knob.setAttribute('aria-valuenow', Math.round(v))
-      knob.setAttribute('aria-valuetext', v > 60 ? 'Больше черновика' : v < 40 ? 'Больше финала' : 'Поровну')
-      labels[0].classList.toggle('on', v > 60)
-      labels[1].classList.toggle('on', v < 40)
-      cmp.dataset.v = v
+      knob.setAttribute('aria-valuetext', share >= 1 ? 'Только черновик' : share <= 0 ? 'Только финал' : share > 0.6 ? 'Больше черновика' : share < 0.4 ? 'Больше финала' : 'Поровну')
+      labels[0].classList.toggle('on', share > 0.6)
+      labels[1].classList.toggle('on', share < 0.4)
     }
-    const at = e => { const r = cmp.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100) }
-    cmp.addEventListener('pointerdown', e => {
+    const at = e => { const r = band.getBoundingClientRect(); set((e.clientX - r.left) / r.width * 100) }
+    band.addEventListener('pointerdown', e => {
       if (e.button) return
-      at(e); cmp.setPointerCapture(e.pointerId)
-      const move = ev => at(ev)
-      const up = () => { cmp.removeEventListener('pointermove', move); cmp.removeEventListener('pointerup', up); cmp.removeEventListener('pointercancel', up) }
-      cmp.addEventListener('pointermove', move); cmp.addEventListener('pointerup', up); cmp.addEventListener('pointercancel', up)
+      at(e); band.setPointerCapture(e.pointerId)
+      const up = () => { band.removeEventListener('pointermove', at); band.removeEventListener('pointerup', up); band.removeEventListener('pointercancel', up) }
+      band.addEventListener('pointermove', at); band.addEventListener('pointerup', up); band.addEventListener('pointercancel', up)
     })
     knob.addEventListener('keydown', e => {
-      const v = +cmp.dataset.v
       const d = { ArrowLeft: -5, ArrowDown: -5, ArrowRight: 5, ArrowUp: 5, PageDown: -25, PageUp: 25 }[e.key]
       if (d !== undefined) set(v + d)
       else if (e.key === 'Home') set(0)
@@ -872,7 +875,7 @@ document.querySelectorAll('.media').forEach((box) => {
       else return
       e.preventDefault()
     })
-    set(50)
+    new ResizeObserver(() => set(v)).observe(band)
   })
 </script>
 </body>
