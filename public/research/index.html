@@ -132,19 +132,27 @@
   .pairs { max-width: var(--wide); margin: 28px auto 0; padding: 0 20px; display: grid; gap: 48px; }
   .pair { margin: 0; }
   /* Сравнение: оба кадра в одном телефоне, слева от линии черновик, справа финал. Линия ходит по всей плашке */
-  .pair-shots { --x: 50%; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 28px 20px; background: var(--band); border-radius: 8px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: ew-resize; }
+  .pair-shots { --x: 50%; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px; background: var(--band); border-radius: 8px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: ew-resize; }
   .pcmp { --clip: 50%; position: relative; width: 100%; max-width: 300px; aspect-ratio: 723 / 1568; }
   .pcmp img { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; -webkit-user-drag: none; }
   .pcmp-was { clip-path: inset(0 calc(100% - var(--clip)) 0 0); }
   .pcmp-bar { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12); pointer-events: none; }
   .pcmp-knob { position: absolute; top: 50%; left: var(--x); width: 42px; height: 42px; margin: -21px 0 0 -21px; border: 0; border-radius: 50%; background: #fff; color: var(--text); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); display: grid; place-items: center; cursor: ew-resize; padding: 0; font: 600 16px/1 inherit; letter-spacing: 2px; }
   .pcmp-knob:focus-visible { outline: 2px solid var(--volt); outline-offset: 3px; }
-  .pcmp-labels { width: 100%; max-width: 300px; display: flex; justify-content: space-between; font-size: 13.5px; color: rgba(255, 255, 255, 0.62); }
-  .pcmp-labels span { transition: color .2s; }
+  /* Подписи — по центру боковых полей, на уровне середины телефона. На узком экране полей нет — подписи под кадром */
+  .pcmp-labels { position: absolute; inset: 0; pointer-events: none; font-size: 13.5px; color: rgba(255, 255, 255, 0.62); }
+  .pcmp-labels span { position: absolute; top: 50%; transition: color .2s; }
+  .pcmp-labels span:first-child { left: calc((100% - min(300px, 100% - 56px)) / 4); transform: translate(-50%, -50%); }
+  .pcmp-labels span:last-child { right: calc((100% - min(300px, 100% - 56px)) / 4); transform: translate(50%, -50%); }
+  @media (max-width: 600px) {
+    .pcmp-labels { position: static; width: 100%; max-width: 300px; display: flex; justify-content: space-between; }
+    .pcmp-labels span { position: static; transform: none !important; }
+    .pcmp-knob { top: calc(50% - 16px); }
+  }
   .pcmp-labels span.on { color: #fff; }
   .pair figcaption { max-width: var(--col); margin: 20px auto 0; }
   .pair h4 { font-size: 16px; line-height: 1.35; font-weight: 600; margin: 0 0 8px; }
-  @media (max-width: 720px) { .pairs { padding: 0 12px; gap: 36px; } .pair-shots { padding: 16px 12px 12px; } .pair figcaption { padding: 0 8px; } }
+  @media (max-width: 720px) { .pairs { padding: 0 12px; gap: 36px; } .pair-shots { padding: 16px 12px; } .pair figcaption { padding: 0 8px; } }
 
   /* Таблицы: ширина как у кадров, колонки и внешняя рамка */
   .tbl { max-width: var(--wide); margin: 24px auto 0; padding: 0 20px; overflow-x: auto; }
