@@ -87,7 +87,7 @@ export function DemoPanel() {
         {DEV && <a href="#/flows">Сценарии</a>}
         {DEV && <a href="#/frames">Все кадры</a>}
         {DEV && <a href="#/kit">Кит</a>}
-        <a href="/case/index.html">Кейс</a>
+        <a href="/research/index.html">Кейс</a>
       </div>
     </aside>
   )
