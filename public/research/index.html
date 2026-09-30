@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Парковка — кейс</title>
+<meta name="description" content="Кейс к тестовому: бронь места на парковке бизнес-центра — ресерч, решения по карте и интерфейсу, допущения и что проверить на людях." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face {
+    font-family: 'FEELDEdge';
+    src: url('FEELDEdgeVariableVF.woff2') format('woff2');
+    font-weight: 100 900;
+    font-display: block;
+  }
+  :root {
+    --text: #1b1f20;
+    --body: #3c4043;
+    --muted: #747474;
+    --line: #ebedf3;
+    --rule: #cdd1da;
+    --bg: #ffffff;
+    --soft: #f4f5f8;
+    --band: #0b0c10;
+    --volt: #c8ff00;
+    --col: 640px;
+    --wide: 1080px;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.65; letter-spacing: -0.006em; font-feature-settings: 'cv11', 'ss03'; }
+  a { color: inherit; }
+  .col { max-width: var(--col); margin: 0 auto; padding: 0 20px; }
+  .ar { width: 0.95em; height: 0.95em; margin-left: 0.25em; vertical-align: -0.12em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .cnav, .go { font-size: 14px; font-weight: 500; line-height: 1.35; z-index: 40; }
+  .cnav { position: absolute; top: 20px; left: 20px; }
+  .gos { position: absolute; top: 20px; right: 20px; z-index: 40; display: flex; gap: 20px; }
+  .go .short { display: none; }
+  .cnav a, .go { text-decoration: none; color: var(--text); }
+  .cnav .me:hover, .go:hover { opacity: 0.7; }
+  .cnav ul { display: none; list-style: none; margin: 32px 0 0; padding: 0; flex-direction: column; gap: 10px; }
+  .cnav li { margin: 0; padding: 0; }
+  .cnav li a { position: relative; display: block; color: var(--muted); text-wrap: pretty; transition: color 180ms; }
+  .cnav li a span { display: block; transition: transform 180ms cubic-bezier(0.25, 0.1, 0.25, 1); }
+  .cnav li a::before { content: ''; position: absolute; left: 0; top: 0.5em; width: 5px; height: 5px; border-radius: 50%; background: var(--text); transform: scale(0); transition: transform 180ms; }
+  .cnav li a:hover, .cnav li a.on { color: var(--text); }
+  .cnav li a:hover span, .cnav li a.on span { transform: translateX(12px); }
+  .cnav li a.on::before { transform: scale(1); }
+  @media (prefers-reduced-motion: reduce) { .cnav li a, .cnav li a span, .cnav li a::before { transition: none; } }
+  .hero { padding: 96px 20px 8px; }
+  .name { font-family: 'FEELDEdge', 'Inter', sans-serif; font-size: 64px; line-height: 1; letter-spacing: -0.05em; font-weight: 600; margin: 0; }
+  .lead { margin: 20px 0 0; font-size: 22px; line-height: 1.4; font-weight: 600; letter-spacing: -0.02em; text-wrap: balance; }
+  .facts { margin: 16px 0 0; font-size: 12.5px; color: var(--muted); }
+  .facts span + span::before { content: ' · '; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; margin: 28px 0 0; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 20px; border-radius: 999px; font-size: 15px; font-weight: 600; text-decoration: none; }
+  .btn.dark { background: var(--text); color: #fff; }
+  .btn.light { border: 1px solid var(--line); background: var(--soft); }
+  .aside { margin: 28px 0 0; font-size: 15px; color: var(--muted); }
+  .rt { margin: 14px 0 0; font-size: 15px; color: var(--muted); }
+  .rt a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .toc { margin: 40px 0 0; padding: 0; font-size: 14.5px; color: var(--muted); columns: 2; column-gap: 28px; }
+  .toc a { display: block; text-decoration: none; padding: 3px 0; break-inside: avoid; }
+  .toc a:hover { color: var(--text); }
+  section { padding-top: 72px; }
+  h2 { font-size: 26px; line-height: 1.25; font-weight: 700; letter-spacing: -0.025em; margin: 0 0 18px; }
+  h3 { font-size: 18px; line-height: 1.35; font-weight: 600; margin: 36px 0 10px; letter-spacing: -0.015em; }
+  p { margin: 0 0 16px; color: var(--body); text-wrap: pretty; }
+  ul, ol { margin: 0 0 18px; padding-left: 22px; color: var(--body); }
+  li { margin: 0 0 10px; padding-left: 2px; }
+  li::marker { color: var(--muted); }
+  li, td, th, .note, .aside, .from, .principle p, :is(.media, .cmp) .mcap { text-wrap: pretty; }
+  b { color: var(--text); font-weight: 600; }
+  code { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 0.88em; background: var(--soft); padding: 2px 6px; border-radius: 4px; }
+  .note { font-size: 14px; color: var(--muted); }
+  .principle { margin: 20px 0 0; padding: 20px 22px; border-radius: 12px; background: var(--soft); }
+  .principle p { margin: 0; }
+  .principle p + p { margin-top: 10px; }
+  .from { display: block; margin-top: 2px; font-size: 13.5px; color: var(--muted); }
+  /* Границы тестового: светлый контейнер — тёмный уже значит эффект, гипотезу или спорное */
+  .scope { background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 16px 20px; margin: 24px 0; font-size: 15px; line-height: 1.6; color: var(--body); }
+  .hyp, .effect, .debate { background: var(--text); color: rgba(255, 255, 255, 0.84); padding: 18px 20px; border-radius: 8px; margin: 24px 0; font-size: 15px; line-height: 1.6; }
+  .hyp b, .effect b, .debate b { color: #fff; }
+  .k { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; letter-spacing: 0.01em; margin-bottom: 8px; }
+  .k svg { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .effect .k { color: var(--volt); }
+  .hyp .k { color: #ffcf5c; }
+  .debate .k { color: #ff8f6b; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 28px 0 0; }
+  .stats div { background: var(--bg); padding: 16px 14px; }
+  .stats b { display: block; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+  .stats span { font-size: 13px; color: var(--muted); line-height: 1.4; display: block; margin-top: 6px; }
+
+  /* Кадры: шире колонки текста, уже экрана — выбиваются из ритма текста */
+  .media { max-width: var(--wide); margin: 36px auto 0; padding: 0 20px; }
+  .media .stage { position: relative; aspect-ratio: 16 / 10; background: var(--band); border-radius: 8px; overflow: hidden; touch-action: pan-y; outline: none; }
+  .media .stage img { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; object-fit: contain; display: none; }
+  .media .stage img.ph { height: 94%; width: auto; max-width: 100%; }
+  .media .stage img.on { display: block; }
+  :is(.media, .cmp) .ctrl { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+  :is(.media, .cmp) .ctrl:empty { display: none; }
+  :is(.media, .cmp) .seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 999px; background: var(--soft); border: 1px solid var(--line); }
+  :is(.media, .cmp) .seg button { border: 0; background: transparent; padding: 7px 16px; border-radius: 999px; font: inherit; font-size: 13.5px; font-weight: 500; color: var(--muted); cursor: pointer; }
+  :is(.media, .cmp) .seg button.on { background: var(--text); color: #fff; }
+  :is(.media, .cmp) .seg button:disabled { opacity: 0.35; cursor: default; }
+  .media .pager { display: inline-flex; align-items: center; gap: 6px; }
+  .media .pager button { width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: var(--soft); font: inherit; font-size: 17px; font-weight: 600; line-height: 1; color: var(--text); cursor: pointer; }
+  .media .pager button:hover { border-color: var(--rule); }
+  .media .pager span { min-width: 56px; text-align: center; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  :is(.media, .cmp) .mcap { margin: 10px auto 0; max-width: var(--col); text-align: center; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  /* Под кадром по центру: подпись ближе к кадру, управление — ниже, с отступом побольше */
+  .media .mfoot { display: flex; flex-direction: column; align-items: center; margin-top: 12px; }
+  .media .mfoot .mcap { margin: 0 auto; max-width: var(--col); text-align: center; }
+  .media .mfoot .ctrl { margin-top: 18px; justify-content: center; }
+
+  /* Сравнение тем: светлый слой обрезан по разделителю, --x двигает оба */
+  .cmp { max-width: var(--wide); margin: 36px auto 56px; padding: 0 20px; }
+  .cmp .ctrl { margin-top: 16px; }
+  .cmp .stage { --x: 50%; position: relative; aspect-ratio: 16 / 10; background: var(--band); border-radius: 8px; overflow: hidden; touch-action: pan-y; cursor: ew-resize; user-select: none; outline: none; }
+  .cmp .stage:focus-visible { box-shadow: 0 0 0 3px var(--volt); }
+  .cmp .layer { position: absolute; inset: 0; }
+  .cmp .layer img { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+  .cmp .layer img.ph { height: 94%; width: auto; max-width: 100%; }
+  .cmp .light { clip-path: inset(0 0 0 var(--x)); }
+  .cmp .handle { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15); pointer-events: none; }
+  .cmp .handle::after { content: '‹ ›'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 42px; height: 42px; border-radius: 50%; background: #fff; color: var(--text); display: grid; place-items: center; font-size: 16px; font-weight: 600; letter-spacing: 2px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
+
+  /* Черновик → финал: пары кадров на тёмной подложке, как слайды */
+  .pairs { max-width: var(--wide); margin: 28px auto 0; padding: 0 20px; display: grid; gap: 48px; }
+  .pair { margin: 0; }
+  .pair-shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 28px 28px 20px; background: var(--band); border-radius: 8px; }
+  .pair-shot { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .pair-shot img { width: 100%; max-width: 300px; height: auto; }
+  .pair-shot span { font-size: 13.5px; color: rgba(255, 255, 255, 0.62); }
+  .pair figcaption { max-width: var(--col); margin: 20px auto 0; }
+  .pair h4 { font-size: 16px; line-height: 1.35; font-weight: 600; margin: 0 0 8px; }
+  @media (max-width: 720px) { .pairs { padding: 0 12px; gap: 36px; } .pair-shots { gap: 10px; padding: 16px 12px 12px; } .pair figcaption { padding: 0 8px; } }
+
+  /* Таблицы: ширина как у кадров, колонки и внешняя рамка */
+  .tbl { max-width: var(--wide); margin: 24px auto 0; padding: 0 20px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.5; border: 1px solid var(--rule); }
+  th, td { text-align: left; vertical-align: top; padding: 12px 14px; border: 1px solid var(--rule); color: var(--body); }
+  th { background: var(--soft); color: var(--text); font-weight: 600; }
+  td:first-child { color: var(--text); font-weight: 500; }
+  .foot { margin: 96px 0; font-size: 14px; color: var(--muted); }
+  /* Музыка под оглавлением: подпись «Включи меня» — только до первого запуска, дальше бежит название трека */
+  .tune { display: none; position: fixed; left: 20px; bottom: 20px; z-index: 40; align-items: center; gap: 6px; }
+  .tune-pill { border: 1px solid var(--line); background: #fff; box-shadow: 0 1px 2px rgba(16, 18, 24, 0.05), 0 4px 12px rgba(16, 18, 24, 0.06); }
+  .tune-hint { display: block; text-align: center; transform: translateX(-5px); }
+  .tune-pill { flex: none; width: 196px; display: flex; align-items: center; gap: 10px; padding: 5px 10px 5px 5px; border-radius: 999px; }
+  /* Громкость — ручка: ноль вверху, громче по часовой, как у ручки на технике */
+  .tune-vol { position: relative; flex: none; width: 48px; height: 48px; border-radius: 50%; background: #fff; border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(16, 18, 24, 0.05), 0 4px 12px rgba(16, 18, 24, 0.06); cursor: grab; touch-action: none; outline: none; }
+  .tune-vol:active { cursor: grabbing; }
+  .tune-vol:focus-visible { box-shadow: 0 0 0 3px var(--volt); }
+  @media (min-width: 1080px) and (min-height: 700px) { .tune { display: flex; } }
+  .tune:not(.started) .tune-vol { display: none; }
+  .tune.started .tune-vol { animation: tune-in 220ms cubic-bezier(0.25, 0.1, 0.25, 1); }
+  @keyframes tune-in { from { opacity: 0; transform: translateX(-8px) scale(0.9); } }
+  .tune-vol .ring { position: absolute; inset: -1px; width: 48px; height: 48px; overflow: visible; }
+  .tune-vol .track { fill: none; stroke: #dfe2ea; stroke-width: 1.5; }
+  .tune-vol .fill { fill: none; stroke: var(--text); stroke-width: 3; stroke-dasharray: var(--v, 60) 100; transform: rotate(-90deg); transform-origin: 24px 24px; }
+  .tune-vol .dot { fill: var(--text); transform: rotate(calc(var(--v, 60) * 3.6deg)); transform-origin: 24px 24px; }
+  .tune-vol .spk { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; fill: none; stroke: var(--text); stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+  .tune-vol .spk path:first-child { fill: var(--text); stroke: none; }
+  .tune-vol .mx, .tune-vol.mute .w1, .tune-vol.mute .w2, .tune-vol.low .w2 { display: none; }
+  .tune-vol.mute .mx { display: inline; }
+  .tune-btn { flex: none; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--text); color: #fff; display: grid; place-items: center; cursor: pointer; transition: transform 150ms; }
+  .tune-btn:hover { transform: scale(1.06); }
+  .tune-btn svg { width: 16px; height: 16px; fill: currentColor; }
+  .tune .i-pause, .tune.on .i-play { display: none; }
+  .tune.on .i-pause { display: block; }
+  .tune-text { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; font-size: 13.5px; font-weight: 500; }
+  .tune.started .tune-text { -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 14px), transparent); mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 14px), transparent); }
+  .tune-run { display: none; width: max-content; animation: tune-run 18s linear infinite paused; }
+  .tune-run span { padding-right: 32px; }
+  .tune.started .tune-hint { display: none; }
+  .tune.started .tune-run { display: inline-flex; }
+  .tune.on .tune-run { animation-play-state: running; }
+  @keyframes tune-run { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .tune-run { animation: none; } }
+  /* С 1080 колонка слева помещается рядом с кадрами: кадры сужаются, чтобы не заходить под неё */
+  @media (min-width: 1080px) {
+    .cnav { position: fixed; width: 196px; }
+    .cnav ul { display: flex; }
+    .gos { position: fixed; }
+    .hero .toc { display: none; }
+    .media, .tbl, .cmp { max-width: min(var(--wide), calc(100vw - 2 * 232px)); }
+
+  }
+  @media (max-width: 480px) { .go .long { display: none; } .go .short { display: inline; } .gos { gap: 16px; } }
+  @media (max-width: 720px) {
+    body { font-size: 15px; }
+    .cnav, .go { top: 16px; font-size: 13.5px; }
+    .cnav { left: 16px; }
+    .gos { top: 16px; right: 16px; }
+    .hero { padding-top: 80px; }
+    .name { font-size: 48px; }
+    .lead { font-size: 17px; }
+    .toc { columns: 1; }
+    .stats { grid-template-columns: 1fr; }
+    .media, .tbl, .cmp { padding: 0 12px; }
+    .media .stage, .cmp .stage { aspect-ratio: 4 / 5; }
+    table { min-width: 640px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="cnav" aria-label="Разделы ресерча">
+  <a class="me" href="https://folionew-gamma.vercel.app/" target="_blank" rel="noopener">Шапошников Богдан<svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 7 17M8 7h9v9"/></svg></a>
+  <ul>
+    <li><a href="#top" data-id="top">Парковка</a></li>
+    <li><a href="#short" data-id="short">01. Коротко</a></li>
+    <li><a href="#task" data-id="task">02. Задача и человек</a></li>
+    <li><a href="#plan" data-id="plan">03. Что на чертеже</a></li>
+    <li><a href="#analogs" data-id="analogs">04. Аналоги → приёмы</a></li>
+    <li><a href="#insights" data-id="insights">05. Что из этого следует</a></li>
+    <li><a href="#map" data-id="map">06. Как уложить этаж</a></li>
+    <li><a href="#ui" data-id="ui">07. Интерфейс: решения</a></li>
+    <li><a href="#assumptions" data-id="assumptions">08. Допущения</a></li>
+    <li><a href="#tests" data-id="tests">09. Что проверить на людях</a></li>
+  </ul>
+</nav>
+<div class="tune">
+  <div class="tune-pill">
+    <button type="button" class="tune-btn" aria-label="Включить музыку">
+      <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+      <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+    </button>
+    <span class="tune-text"><span class="tune-hint">Включи меня :)</span><span class="tune-run" aria-hidden="true"><span>Prabin Dangol — Attract Positive Energy, Peace &amp; Success</span><span>Prabin Dangol — Attract Positive Energy, Peace &amp; Success</span></span></span>
+  </div>
+  <div class="tune-vol" role="slider" tabindex="0" aria-label="Громкость" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60">
+    <svg class="ring" viewBox="0 0 48 48" aria-hidden="true"><circle class="track" cx="24" cy="24" r="20" /><circle class="fill" cx="24" cy="24" r="20" pathLength="100" /><circle class="dot" cx="24" cy="4" r="4.5" /></svg>
+    <svg class="spk" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L11.5 6v12l-4.3-3.5H4z"/><path class="w1" d="M15 9.5a3.5 3.5 0 0 1 0 5"/><path class="w2" d="M17.5 7a7 7 0 0 1 0 10"/><path class="mx" d="m15.5 9.5 5 5m0-5-5 5"/></svg>
+  </div>
+  <audio src="music.mp3" preload="none" loop></audio>
+</div>
+<div class="gos">
+  <a class="go" href="https://www.figma.com/design/tjjwIfvxjuazKVu1I8k8AM/Triiibe-Assignment?node-id=41-7291" target="_blank" rel="noopener"><span class="long">Макеты в Figma</span><span class="short">Figma</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 7 17M8 7h9v9"/></svg></a>
+  <a class="go" href="/"><span class="long">Открыть прототип</span><span class="short">Прототип</span><svg class="ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 7 17M8 7h9v9"/></svg></a>
+</div>
+
+<header class="col hero" id="top">
+  <h1 class="name">Парковка</h1>
+  <p class="lead">Бронь места на парковке бизнес-центра: от того, кто и когда бронирует, до интерфейса, который одинаково понятен любому сотруднику</p>
+  <p class="rt">Около 25 минут чтения. Главное — в <a href="#short">«01. Коротко»</a>, это 2 минуты.</p>
+  <div class="cta">
+    <a class="btn dark" href="/">Открыть прототип</a>
+    <a class="btn light" href="https://www.figma.com/design/tjjwIfvxjuazKVu1I8k8AM/Triiibe-Assignment?node-id=41-7291" target="_blank" rel="noopener">Макеты в Figma</a>
+  </div>
+  <p class="aside">Сначала ресерч: кто бронирует, что на чертеже, как похожие задачи решают другие продукты. Потом решения — по карте и по интерфейсу, допущения и что проверить на людях. Все экраны и состояния живьём — в прототипе, компоненты — в Figma. Аналоги и разбор чертежа собирал с ИИ, отбор и решения — мои.</p>
+  <nav class="toc">
+    <a href="#short">01. Коротко</a>
+    <a href="#task">02. Задача и человек</a>
+    <a href="#plan">03. Что на чертеже</a>
+    <a href="#analogs">04. Аналоги → приёмы</a>
+    <a href="#insights">05. Что из этого следует</a>
+    <a href="#map">06. Как уложить этаж</a>
+    <a href="#ui">07. Интерфейс: решения</a>
+    <a href="#assumptions">08. Допущения</a>
+    <a href="#tests">09. Что проверить на людях</a>
+  </nav>
+</header>
+
+<section id="short">
+  <div class="col">
+    <h2>01. Коротко</h2>
+    <p>Сотрудник ездит в офис несколько раз в неделю и бронирует место заранее — вечером или утром перед поездкой. Модуль парковки — один экран: план этажа, на котором место уже подобрано. После брони тот же план ведёт к своему месту, а пропуск для въезда открывается одним тапом.</p>
+    <p>Ниже — короткие ответы на вопросы из задания. Подробнее — в разделе 07, живьём — в прототипе.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <colgroup><col style="width:30%" /><col /></colgroup>
+      <tr><th>Вопрос из задания</th><th>Ответ</th></tr>
+      <tr><td>Как сделать бронь быстрой и понятной</td><td>Два тапа: открыть и нажать «Забронировать». Место из прошлого раза уже выбрано на завтра на привычное время. С главной приложения ещё быстрее: карточка парковки показывает это же место и бронирует его в один тап.</td></tr>
+      <tr><td>Как показать много мест на маленьком экране</td><td>Этаж повёрнут и выпрямлен в сетку 4 × 10: все 40 мест видны сразу, без увеличения. Этажи переключаются внизу, направление движения показывает тонкая линия по проездам. Найти место в гараже помогает «Как доехать» — вид из-за руля.</td></tr>
+      <tr><td>Что нужно знать до подтверждения</td><td>Номер места и этаж, дата и время. Всё это в шторке прямо у кнопки. Метка объясняет, почему подобрано именно это место: «как в прошлый раз» или «ближе к выходу».</td></tr>
+      <tr><td>Как отличить занятое, недоступное и выбранное место</td><td>Свободное — голубое, выбранное — синее с обводкой, занятое — серое, закрытое — серое со штриховкой. Тап по серому месту объясняет, что с ним: «Занято на это время — можно взять с 13:30» или «Место закрыто до 5 окт».</td></tr>
+      <tr><td>Как восстановить сценарий после конфликта или ошибки</td><td>Место заняли — бронь не создаётся, соседнее свободное место предлагается одной кнопкой. Мест нет — ближайшее время или день одним тапом и «Уведомить». Связь пропала после нажатия — сначала проверяем, создалась ли бронь, и только потом предлагаем повторить. Места не загрузились — «Повторить», дата и время сохраняются.</td></tr>
+      <tr><td>Нужен ли автоподбор</td><td>Да, но без навязывания: место подобрано сразу, а план — чтобы его поменять. Если прошлое место занято, говорим прямо: «ваше место 17 занято — это ближайшее».</td></tr>
+    </table>
+  </div>
+  <div class="col">
+    <div class="stats">
+      <div><b>80</b><span>мест на двух этажах, по 40 на каждом</span></div>
+      <div><b>9</b><span>аналогов из соседних задач</span></div>
+      <div><b>2</b><span>тапа от открытия до брони</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="task">
+  <div class="col">
+    <h2>02. Задача и человек</h2>
+    <p>Сотрудник ездит в офис несколько раз в неделю и бронирует место заранее — вечером или утром перед поездкой. С приложением он встречается в двух разных ситуациях.</p>
+    <h3>Дома, вечером или утром: забронировать</h3>
+    <p>Спокойно, телефон в руке. Нужно понять, есть ли место на нужное время, и занять его. Главный страх — приехать и не найти, где встать.</p>
+    <h3>В гараже, за рулём: проехать и найти место</h3>
+    <p>Торопится, под землёй нет связи. Нужно показать пропуск у ворот и найти своё место среди восьмидесяти одинаковых на двух этажах.</p>
+    <h3>Что может пойти не так</h3>
+    <ul>
+      <li>На нужное время мест нет.</li>
+      <li>Место заняли, пока человек подтверждал бронь.</li>
+      <li>Места не загрузились.</li>
+      <li>Связь пропала в момент брони — непонятно, создалась ли она.</li>
+      <li>Планы поменялись — бронь нужно отменить или уехать раньше.</li>
+    </ul>
+    <h3>Правила из задания</h3>
+    <ul>
+      <li>Бронь — на ближайшие 7 дней, минимум на час. Начало и конец выбирает сам человек.</li>
+      <li>У одного человека одна активная бронь.</li>
+      <li>Одно место нельзя забронировать двоим на пересекающееся время. Если двое выбрали его одновременно, возникает конфликт.</li>
+      <li>Отменить бронь можно только до её начала.</li>
+      <li>Часть мест бывает недоступна или временно закрыта.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="plan">
+  <div class="col">
+    <h2>03. Что на чертеже</h2>
+    <p>Этаж — одно кольцо с движением в одну сторону. Этажей два, на каждом 40 мест. Лифта, выхода в здание и пандуса на второй этаж на чертеже нет — это допущения, раздел 08.</p>
+    <ol>
+      <li><b>Ряд у верхней стены.</b> 10 косых мест, заезд из верхнего проезда.</li>
+      <li><b>Двойной ряд посередине.</b> 2 × 10 мест спиной к спине: половина смотрит в верхний проезд, половина — в нижний.</li>
+      <li><b>Ряд у нижней стены.</b> 10 мест. Всего на этаже 40.</li>
+      <li><b>Въезд и выезд — одни ворота.</b> Рядом будка охраны — на неё опирается основной способ въезда, по QR.</li>
+      <li><b>Одно кольцо в одну сторону.</b> Въезд → нижний проезд → разворот → верхний проезд → выезд.</li>
+    </ol>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"s-plan.webp","ph":1,"cd":"Чертёж из задания. Цифры на плане — пункты списка выше."}
+  ]'></div>
+</section>
+
+<section id="analogs">
+  <div class="col">
+    <h2>04. Аналоги → приёмы</h2>
+    <p>Смотрел не парковочные приложения вообще, а продукты, где решают те же подзадачи: выбрать место из плотной сетки, понять загрузку заранее, пережить конфликт, найти место на месте. Из каждого взял один приём — в правой колонке написано, где он у нас.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <tr><th>Где</th><th>Приём</th><th>У нас</th></tr>
+      <tr><td>Parkalot, офисная парковка</td><td>Дни недели лентой, под каждым днём — сколько мест свободно. Место выбирают на объёмном плане этажа, снизу карточка «Space 79 · Available · Reserve».</td><td>7 дней одной лентой с числом свободных мест. Карточка места с кнопкой брони — шторкой поверх плана, без отдельного экрана.</td></tr>
+      <tr><td>Wayleadr, офисная парковка</td><td>Выбора нет совсем: система сама распределяет места между теми, кто приедет, по истории посещений.</td><td>Середина: место предложено сразу — прошлое или ближе к выходу, — но его можно поменять на плане. Задание требует выбор на карте, а людям с любимым местом он и правда нужен.</td></tr>
+      <tr><td>Google Карты, загруженность по часам</td><td>Столбики по часам показывают, когда место обычно забито, ещё до поездки.</td><td>Столбики «сколько мест свободно» по часам выбранного дня. Видно, что днём почти всё занято, а утром и вечером свободно. Выбранное время подсвечено.</td></tr>
+      <tr><td>Кинотеатры: BookMyShow, District</td><td>Чужие выбранные места гаснут у всех в реальном времени. Своё держат 7–10 минут, пока идёт оплата.</td><td>Статусы на плане обновляются вживую. Держать место не нужно: подтверждение в один тап без оплаты, окно для конфликта — секунды. Но экран конфликта всё равно есть.</td></tr>
+      <tr><td>Купон ставки</td><td>Если коэффициент изменился, пока ставка отправлялась, купон не подменяет его молча: показывает новое значение и просит подтвердить. Выгодные изменения можно разрешить принимать заранее.</td><td>«Место 17 только что заняли»: бронь не создана, рядом — ближайшее свободное место и одна кнопка «Забронировать 18». Молча на другое место не переносим.</td></tr>
+      <tr><td>OpenTable, рестораны</td><td>Когда подходящего столика нет, предлагает ближайшее время и «Notify me» — сообщить, когда освободится. Офисные парковки так же ведут лист ожидания.</td><td>«Мест нет» — не тупик: ближайшее время в тот же день или ближайший день, где места есть, одним тапом, и «Уведомить», когда место освободится.</td></tr>
+      <tr><td>Apple Wallet, посадочный</td><td>Жёсткая иерархия полей: главное крупно — откуда и куда, в шапке — то, что видно в стопке карт, мелко — выход, группа, место.</td><td>На пропуске крупно место и этаж — это ищешь глазами в гараже. Ниже QR, время и «Как доехать до места».</td></tr>
+      <tr><td>Google Карты, превью маршрута</td><td>Маршрут можно просмотреть поворот за поворотом ещё до выезда (Immersive View for routes).</td><td>«Как доехать до места»: вид из-за руля с подсвеченным местом и шаги пути от ворот. Это вариант Г в разделе 06.</td></tr>
+      <tr><td>Паркли, городская парковка</td><td>Время выбирается на одном экране, срок отмены написан над кнопкой отмены, после поездки — «Повторить бронирование». Иерархию билета проверяли на водителях.</td><td>Срок отмены — над кнопкой отмены на пропуске. «Повторить» — не после поездки, а на входе: в карточке на главной бронь на завтра в один тап, а в самом модуле прошлое место уже подобрано.</td></tr>
+    </table>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"parkalot.jpg","ph":1,"cd":"Parkalot: лента дней с числом свободных мест и объёмный план этажа с карточкой места «Reserve»."},
+    {"d":"s-auto.webp","ph":1,"cd":"Схема по мотивам Wayleadr: система сама распределяет места по истории посещений."},
+    {"d":"popular-times.jpg","ph":1,"cd":"Google Карты: загруженность места по часам."},
+    {"d":"s-cinema.webp","ph":1,"cd":"Схема: кинозал — занятые места гаснут вживую, своё держат, пока идёт оплата."},
+    {"d":"s-bet.webp","ph":1,"cd":"Схема: купон ставки — коэффициент изменился, ставку нужно подтвердить заново."},
+    {"d":"s-wait.webp","ph":1,"cd":"Схема по мотивам OpenTable: ближайшее свободное время и «Сообщить, когда освободится»."},
+    {"d":"wallet-boarding.jpg","ph":1,"cd":"Apple Wallet: крупно — откуда и куда, мелко — выход, группа, место."},
+    {"d":"immersive-routes.jpg","ph":1,"cd":"Google Карты: превью маршрута поворот за поворотом до выезда."},
+    {"d":"parkly-ticket.jpg","ph":1,"cd":"Паркли: билет брони, время и «Как припарковаться?»."}
+  ]'></div>
+  <div class="col">
+    <p class="note" style="margin-top:24px">Источники: <a href="https://parkalot.io/" target="_blank" rel="noopener">parkalot.io</a>, <a href="https://wayleadr.com/parking-management-software/" target="_blank" rel="noopener">wayleadr.com</a>, Google о <a href="https://blog.google/products-and-platforms/products/maps/maps101-popular-times-and-live-busyness-information/" target="_blank" rel="noopener">загруженности</a> и <a href="https://blog.google/products-and-platforms/products/maps/google-maps-immersive-view-routes/" target="_blank" rel="noopener">превью маршрута</a>, <a href="https://ujjwaltiwari2.medium.com/frontend-system-design-how-bookmyshow-district-etc-actually-build-their-seat-selection-experience-686511d0c27e" target="_blank" rel="noopener">разбор выбора мест BookMyShow и District</a>, справка <a href="https://support.barstoolsportsbook.com/hc/en-us/articles/360049439211-What-happens-if-the-odds-change-while-I-am-placing-a-bet-" target="_blank" rel="noopener">Barstool</a> и <a href="https://thescore.bet/hc/en-us/articles/13873581540109-Odds-and-Line-Changes" target="_blank" rel="noopener">theScore Bet</a>, <a href="https://help.opentable.com/s/article/Availability-Alerts-for-Diners?language=en_US" target="_blank" rel="noopener">OpenTable</a>, <a href="https://developer.apple.com/design/human-interface-guidelines/wallet" target="_blank" rel="noopener">Apple HIG · Wallet</a>, <a href="https://parkly.ru/" target="_blank" rel="noopener">Паркли</a>. Где пригодных картинок нет, нарисованы схемы.</p>
+  </div>
+</section>
+
+<section id="insights">
+  <div class="col">
+    <h2>05. Что из этого следует</h2>
+    <p>Семь выводов, которые определяют экраны.</p>
+    <ol>
+      <li><b>Бронь — привычка, а не событие.</b> Человек ездит несколько раз в неделю, а активная бронь у него одна. Поэтому дата, время и место подставлены из прошлого раза, а бронь на завтра — в один тап прямо с карточки на главной.<span class="from">Задание, Паркли</span></li>
+      <li><b>Выбирать место хотят не все.</b> Место предложено сразу, план — чтобы его поменять. Это и есть ответ на вопрос задания про автоподбор: подбирать, но не навязывать.<span class="from">Wayleadr</span></li>
+      <li><b>Загрузку лучше видеть до выбора места.</b> Столбики свободных мест по часам, число свободных мест у каждого дня и у каждого этажа.<span class="from">Google Карты, Parkalot</span></li>
+      <li><b>Место может уйти из-под пальца.</b> Статусы на плане живые. При конфликте — ближайшее свободное место одной кнопкой, без молчаливых подмен.<span class="from">Кинотеатры, купон ставки</span></li>
+      <li><b>«Мест нет» не должно быть тупиком.</b> Ближайшее время или день, где места есть, и «Уведомить», когда освободится.<span class="from">OpenTable</span></li>
+      <li><b>В брони главное — место и этаж.</b> Они крупно, всё остальное мельче.<span class="from">Apple Wallet</span></li>
+      <li><b>С картой встречаются дважды: выбрать и найти.</b> Выбор — на плане сверху, путь — видом из-за руля. Это вариант Г, раздел 06.<span class="from">Превью маршрута, Parkalot</span></li>
+    </ol>
+  </div>
+</section>
+
+<section id="map">
+  <div class="col">
+    <h2>06. Как уложить этаж в телефон</h2>
+    <p>Главный вопрос задания — как показать много мест на маленьком экране. Рассмотрел пять вариантов и выбрал Г.</p>
+    <h3>Выбран вариант Г: сверху — выбрать, изнутри — доехать</h3>
+    <p>С картой человек встречается дважды, и задачи у этих встреч разные. Дома ему нужен обзор, чтобы выбрать место, в гараже — путь, чтобы его найти. Поэтому у каждой задачи свой взгляд.</p>
+    <ul>
+      <li><b>Выбор — на плане сверху.</b> Чертёж повёрнут без зеркала и выпрямлен в сетку, все 40 мест этажа видны сразу. Место уже подобрано: прошлое или ближе к выходу.</li>
+      <li><b>Путь — по кнопке «Как доехать до места»:</b> вид из-за руля с подсвеченным местом и три шага от ворот. По задумке это векторная анимация: проезд от ворот до места, как превью маршрута в Google Картах. В рамках тестового показал её одной картинкой.</li>
+      <li><b>Сам проезд не запускается.</b> Постоянному сотруднику дорога не нужна, а показывать её каждый раз — лишнее. Кто хочет посмотреть путь, нажимает сам.</li>
+    </ul>
+    <h3>Бронь уже есть: план — карта к своему месту</h3>
+    <p>С бронью модуль открывается тем же планом. Своё место зелёное, остальные приглушены: выбирать больше нечего, бронь может быть одна. Шторка внизу становится карточкой брони: место, время, пропуск, отмена.</p>
+    <ul>
+      <li><b>Зелёный — «твоё», синий — выбор и действия.</b> Место зеленеет прямо на плане в момент брони, без перехода на другой экран.</li>
+      <li><b>Пропуск — отдельный экран, в один тап из шторки.</b> Перед этим тапом человек ещё раз видит план и вспоминает, куда ехать: бронировал, может, неделю назад. Место обычно находят сами — номер написан на полу, а «Как доехать» остаётся на случай, если не нашли.</li>
+      <li><b>Пропуск открывается за 15 минут до начала.</b> До этого кнопка заперта и пишет, с какого времени откроется: «Пропуск с 8:45». Почему 15 минут — в допущениях, раздел 08.</li>
+      <li><b>Пробовал и отказался: всё о брони в шторке.</b> Номер машины строкой, шлагбаум кнопкой, QR отдельным экраном — без экрана пропуска. Пять действий в шторке спорят с планом и читаются кашей. Лишний тап до спокойного экрана дешевле.</li>
+    </ul>
+    <h3>Что ещё рассматривал</h3>
+    <ul>
+      <li><b>А. План сверху без проезда.</b> Весь этаж на экране без увеличения, сразу видно, сколько свободно, а одно место с вариантами статусов — удобный компонент. Но план ничем не запоминается, и путь до места человек додумывает сам. Стал основой Г.</li>
+      <li><b>Б. Кольцо в линию.</b> Места выстроены в порядке проезда: «после разворота четвёртое справа». Но лента вдвое длиннее экрана, а места, стоящие спиной к спине, оказываются в разных её концах.</li>
+      <li><b>В. Вид из-за руля как главная карта.</b> Запоминается и показывает дорогу по-настоящему. Но дальние места мелкие, весь этаж разом не оценить, а оценить доступность — пункт задания. К тому же нужна версия без движения: от такого укачивает. Вошёл в Г как «Как доехать».</li>
+      <li><b>Д. Наклонённый план</b>, как объёмная карта у Parkalot. Обзор остаётся, появляется ощущение пространства и естественный переход в вид из-за руля. Но дальние ряды мельче, а наклонную сетку тяжелее собрать из компонентов.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"s-vD.webp","ph":1,"cd":"Г, выбран: план сверху с подобранным местом, после брони — «Как доехать до места» видом из-за руля."},
+    {"d":"s-vA.webp","ph":1,"cd":"А. План сверху: чертёж повёрнут и выпрямлен, весь этаж на экране."},
+    {"d":"s-vB.webp","ph":1,"cd":"Б. Кольцо в линию: места в порядке проезда, разворот посередине ленты."},
+    {"d":"s-vC.webp","ph":1,"cd":"В. Вид из-за руля и мой первый набросок этой идеи."},
+    {"d":"s-vE.webp","ph":1,"cd":"Д. Наклонённый план, как объёмная карта у Parkalot."}
+  ]'></div>
+  <div class="col">
+    <p class="note" style="margin-top:24px">Схемы нарисованы до выбора цветов, поэтому цвета в них условные: зелёная рамка — свободно, серое — занято на выбранное время, штриховка — закрыто, синее — выбрано. В интерфейсе свободное место голубое, а зелёный оставлен для своего.</p>
+  </div>
+</section>
+
+<section id="ui">
+  <div class="col">
+    <h2>07. Интерфейс: решения</h2>
+    <p>Как устроен интерфейс и почему он такой. Всё, о чём здесь написано, работает в <a href="/">прототипе</a>. Справа от телефона — панель, где можно открыть главную приложения, включить сбой или «нет мест», сменить способ въезда и перемотать время к началу брони.</p>
+
+    <h3>Принцип: простое приложение, а не креатив</h3>
+    <div class="principle">
+      <p>Парковкой пользуются сотрудники всех компаний в здании, а это очень разные люди. За одной дверью — креативная студия, которая оценит смелую подачу. За соседней — геодезическое бюро: инженеры весь день работают в своих программах и чужие интерфейсы не разглядывают. Непривычная навигация или «дизайнерская» кнопка их только тормозит.</p>
+      <p>Поэтому интерфейс нарочно спокойный: приёмы, знакомые по картам и банковским приложениям, шторка снизу, простые слова. Два цвета со смыслом: синий — выбрать и нажать, зелёный — то, что уже твоё. Характер — только в заголовках. Приложение должно одинаково легко заходить и тем, и другим.</p>
+    </div>
+
+    <h3>Вход и бронь в два тапа</h3>
+    <ul>
+      <li><b>Вход — карточка «Парковка» на главной приложения бизнес-центра.</b> Саму главную и таббар не проектирую: они нарисованы заглушками, настоящие только карточка парковки и вкладка «Главная». Карточка — это шторка модуля в миниатюре: место с этажом, метка, почему подобрано именно оно, и тот же ряд — слева дата и время, справа «Забронировать». Бронь на завтра делается прямо отсюда в один тап: человек ездит несколько раз в неделю, и чаще всего ему нужно то же, что в прошлый раз. «Выбрать место» в шапке карточки открывает план, тап по времени — выбор даты и времени. Когда бронь уже есть, в том же ряду стоит «Пропуск», а если мест нет — «Уведомить».</li>
+      <li><b>Модуль открывается сразу планом.</b> Отдельного главного экрана у парковки нет: всё происходит на плане и в шторке под ним. Назад на главную ведёт круглая кнопка в углу плана, как на картах. Шапку с заголовком не добавлял: план потерял бы высоту, а над левым рядом мест и так есть свободный угол. Жест «назад» работает так же: сначала закрывает шторку, потом пропуск, потом возвращает на главную.</li>
+      <li><b>Место уже подобрано.</b> Правило простое: прошлое место на привычное время, если оно свободно. Если занято — ближайшее к выходу на том же этаже, и шторка говорит об этом прямо: «ваше место 17 занято — это ближайшее». Новому человеку подбирается место ближе к выходу. Не нравится подобранное — тап по любому свободному месту, и шторка переключится на него.</li>
+      <li><b>Всё, что человек подтверждает, — у кнопки.</b> В шторке крупно номер места и этаж, а дата и время — в рамке рядом с «Забронировать». Тап по рамке открывает выбор даты и времени.</li>
+      <li><b>Успех виден прямо на плане.</b> Место зеленеет, сверху появляется плашка «Место 17 за вами», шторка превращается в карточку брони. Отдельного экрана «Бронь создана» нет: человек остаётся там же, где выбирал.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/host.png","ph":1,"cd":"Главная приложения бизнес-центра — заглушками. Настоящая только карточка «Парковка»: шторка модуля в миниатюре, бронь на завтра в один тап."},
+    {"d":"ui/plan.png","ph":1,"cd":"Модуль открывается планом: прошлое место уже выбрано, дата и время — у кнопки, назад на главную — кнопка в углу."},
+    {"d":"ui/created.png","ph":1,"cd":"Бронь создана: место зеленеет прямо на плане, сверху плашка «Место 17 за вами»."}
+  ]'></div>
+
+  <div class="col">
+    <h3>План: статусы мест, этажи и путь</h3>
+    <ul>
+      <li><b>Статусы различаются не только цветом.</b> Свободное место голубое с синим номером, выбранное — синее с обводкой, занятое на выбранное время — серое, закрытое — серое со штриховкой, своё — зелёное.</li>
+      <li><b>Занятое и закрытое — одна серая семья.</b> При беглом взгляде глаз ищет только голубое «можно», и лишние цвета ему мешают. Разницу объясняет подсказка: тап по серому месту показывает «Занято на это время — можно взять с 13:30» или «Место закрыто до 5 окт». Разница полезная: занятое может освободиться, если сдвинуть время, а закрытое — нет.</li>
+      <li><b>Номера идут по ходу движения.</b> Вверх по правому проезду — с 1 до 20, после разворота вниз по левому — с 21 до 40. Номер сам подсказывает, далеко ли ехать от ворот.</li>
+      <li><b>Этажи — маленький переключатель внизу карты</b>, в кружке — сколько мест свободно на этаже. Сначала переключатель стоял сверху на всю ширину, но с бронью он пропадал, и план прыгал вверх-вниз. Теперь высота плана всегда одна, а шторки ложатся поверх него, как в картах.</li>
+      <li><b>Путь — тонкая линия по центру проездов:</b> точка на въезде, стрелка на выезде. Раз в несколько секунд по линии проезжает стрелка и показывает, куда ехать, — без полос и стрелок на каждом шагу. Если в настройках телефона включено уменьшение движения, стрелка стоит на месте.</li>
+      <li><b>Проба: места наискосок.</b> На чертеже места косые, поэтому попробовал «ёлочку» по ходу движения. С одной стороны, она даёт экрану динамику и больше похожа на настоящий гараж. С другой — план становится шумнее, и считывать его сложнее. В конце концов это вкусовщина: я склоняюсь к прямым местам, они спокойнее и практичнее, но и «ёлочка» мне нравится. Поэтому в прототипе оставил оба варианта, они переключаются в панели.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/hint.png","ph":1,"cd":"Тап по серому месту: подсказка, с какого времени его можно взять."},
+    {"d":"ui/slant.png","ph":1,"cd":"Проба: места «ёлочкой» по ходу движения — динамичнее, но шумнее."}
+  ]'></div>
+
+  <div class="col">
+    <h3>Дата и время: загрузку видно сразу</h3>
+    <ul>
+      <li><b>7 дней одной лентой, под каждым — сколько мест свободно.</b> Не нужно перебирать дни вслепую. Если сегодня взять хотя бы час уже не успеть, у дня написано «поздно».</li>
+      <li><b>Время «с — до» — кнопками ± с шагом 30 минут</b>, минимум час, как в задании. На сегодня — начиная со следующего получаса. Время почти всегда подставлено из прошлого раза, его чаще сдвигают, чем выбирают заново, и для этого хватает ±.</li>
+      <li><b>Столбики — сколько мест свободно в каждый час.</b> Выбранное время лежит на подложке, в её углу — число мест, свободных на всё время подряд. Оно меньше, чем в самый загруженный час: место должно быть свободно без перерыва.</li>
+      <li><b>План не меняется, пока не нажал «Показать места».</b> Внизу итог — длительность и сколько мест свободно. Если выбранное место свободно и в новое время, оно остаётся, если нет — подбирается новое.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/time.png","ph":1,"cd":"Дата и время: свободные места по дням и по часам, выбранное время на подложке."}
+  ]'></div>
+
+  <div class="col">
+    <h3>Когда что-то пошло не так</h3>
+    <ul>
+      <li><b>Место заняли, пока человек подтверждал.</b> Бронь не создаётся, и шторка говорит об этом прямо: «Место 17 только что заняли». Занятое место на плане помечено красным пунктиром, соседнее свободное обведено, под ними — «Забронировать 18» и «Выбрать вручную». Молча на другое место не переносим — как купон ставки, который не меняет коэффициент без спроса.</li>
+      <li><b>Мест нет.</b> Заголовок говорит, на какое время мест нет: «На завтра 9:00–18:00 мест нет». Ниже — ближайшее время, когда места есть: позже в тот же день или в другой день, чипами в одну строку. Тап по чипу — и план уже на это время. Рядом — рамка времени и «Уведомить»: сообщим, когда место освободится. Переключателя этажей здесь нет: на обоих ноль, переключать нечего.</li>
+      <li><b>Связь пропала после нажатия.</b> Самый коварный сбой: непонятно, создалась бронь или нет. Если сразу предложить «Повторить», можно получить две брони или ложное «не получилось». Поэтому сначала «Проверяем, создалась ли бронь…», потом честный ответ — «Не получилось забронировать. Место 17 всё ещё свободно» — и «Повторить».</li>
+      <li><b>Места не загрузились.</b> «Не удалось загрузить места», совет проверить интернет и «Повторить». Выбранные дата и время не сбрасываются. Пока места грузятся, на плане серые силуэты, поэтому план не прыгает, когда данные приходят.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/conflict.png","ph":1,"cd":"Место заняли за секунду до брони: бронь не создана, рядом — соседнее свободное место."},
+    {"d":"ui/none.png","ph":1,"cd":"Мест нет: ближайшее время и день одним тапом, справа — «Уведомить»."},
+    {"d":"ui/failed.png","ph":1,"cd":"Связь пропала после нажатия: сначала проверили, создалась ли бронь, потом — «Повторить»."},
+    {"d":"ui/error.png","ph":1,"cd":"Места не загрузились: «Повторить», дата и время сохранены."}
+  ]'></div>
+
+  <div class="col">
+    <h3>Своя бронь</h3>
+    <ul>
+      <li><b>С бронью модуль открывается тем же планом.</b> Своё место зелёное, остальные приглушены. Тап по другому месту напоминает правило: «Бронь может быть одна — ваша на месте 17».</li>
+      <li><b>Шторка брони устроена как шторка выбора:</b> слева дата и время, справа главное действие — зелёная кнопка «Пропуск». Человек один раз понял, как устроена шторка, и дальше ничего не ищет.</li>
+      <li><b>До окна въезда пропуск заперт</b> и сам говорит, с какого времени откроется: «Пропуск с 8:45». Отдельная подпись не нужна. Пока бронь идёт, под заголовком написано «Бронь активна · 7 ч 45 мин».</li>
+      <li><b>Отменить можно до начала брони</b> — так в задании. «Отменить бронь» просит подтверждения и возвращает план с плашкой «Бронь отменена, место свободно для коллег». В «···» — добавить в календарь и поделиться.</li>
+      <li><b>Когда бронь идёт, отменить нельзя, но можно освободить место раньше.</b> В правиле задания есть смысл: после начала машина, скорее всего, уже стоит на месте. Если дать её «отменить», место покажется свободным, коллега возьмёт его и приедет к чужой машине. Но в середине дня бывает другая ситуация: человек уехал в два часа, и место до вечера простаивает. Для этого есть «Освободить место раньше»: человек подтверждает, что уже уехал, и остаток брони достаётся коллегам. После этого план сразу открывается на завтра — сегодня парковка ему уже не нужна. Если на въезде стоит камера, освобождение может срабатывать само, когда машина выезжает.</li>
+    </ul>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/booked.png","ph":1,"cd":"Накануне: пропуск заперт и говорит, с какого времени откроется."},
+    {"d":"ui/booked-active.png","ph":1,"cd":"Бронь идёт: сколько осталось и «Освободить место раньше»."},
+    {"d":"ui/release.png","ph":1,"cd":"Освободить раньше — с подтверждением: остаток брони достанется коллегам."}
+  ]'></div>
+
+  <div class="col">
+    <h3>Пропуск — билет, который узнаёшь издалека</h3>
+    <ul>
+      <li><b>Весь экран зелёный.</b> У ворот нет времени искать: пропуск должен отличаться от остального приложения с первого взгляда. Крупно — место и этаж, их ищешь глазами в гараже. Ниже — QR, время и «Как доехать до места».</li>
+      <li><b>Карточка — билет с линией отрыва</b> между въездом и временем. Форма знакома по посадочным и билетам в Wallet, объяснять её не нужно.</li>
+      <li><b>Отмена — внизу экрана</b>, у большого пальца и подальше от QR: у ворот её не нажмут случайно. Над кнопкой написано, до какого времени бронь можно отменить.</li>
+      <li><b>Пропуск работает без связи.</b> QR сохраняется в телефоне в момент брони и открывается по его часам — под землёй связь часто пропадает. Яркость на этом экране — на максимум, чтобы считыватель прочитал код с первого раза.</li>
+      <li><b>«Как доехать до места»</b> — вид из-за руля с подсвеченным местом и три шага: где въезд, какого проезда держаться и каким по счёту будет место: «Место 17 — 7-е слева, номер написан на полу».</li>
+    </ul>
+    <h3>Три способа въезда — под оснащение бизнес-центра</h3>
+    <p>Как именно проезжают шлагбаум, задание не говорит. На чертеже у ворот будка охраны, поэтому основной вариант — QR: его подносят к считывателю или показывают охраннику. Но парковки оснащены по-разному, а от этого меняется весь путь у ворот. Поэтому нарисовал ещё два варианта.</p>
+    <ul>
+      <li><b>QR</b> — у ворот охрана или считыватель.</li>
+      <li><b>Номер машины</b> — на въезде камера, которая узнаёт номер. Доставать ничего не нужно, а номер на пропуске показывает, какая машина записана.</li>
+      <li><b>Кнопка «Открыть шлагбаум»</b> — шлагбаум управляется из приложения. Это быстрее всего, но без связи не сработает, поэтому это дополнение к QR, а не замена.</li>
+    </ul>
+    <p>Меняется только блок въезда, остальной экран один и тот же. В прототипе способ переключается в панели, в разделе «Въезд в брони».</p>
+  </div>
+  <div class="media" data-slides='[
+    {"d":"ui/ticket.png","ph":1,"cd":"Основной вариант — QR: поднести к считывателю или показать охране."},
+    {"d":"ui/ticket-plate.png","ph":1,"cd":"На въезде камера: на пропуске номер машины, доставать ничего не нужно."},
+    {"d":"ui/ticket-barrier.png","ph":1,"cd":"Шлагбаум из приложения: одна кнопка у ворот, но нужна связь."},
+    {"d":"ui/route.png","ph":1,"cd":"«Как доехать до места»: вид из-за руля и три шага от ворот."}
+  ]'></div>
+
+  <div class="col">
+    <h3>Цвет и шрифт</h3>
+    <ul>
+      <li><b>Синий <code>#0055F2</code> — выбор и действия, зелёный <code>#07BC57</code> — «твоё»:</b> своё место на плане, кнопка «Пропуск» и сам пропуск. Всё остальное — нейтральные серые. Оба цвета чистые и яркие, без тяжёлой «корпоративности».</li>
+      <li><b>Белый текст на зелёном — осознанно.</b> По формуле контраста выигрывает тёмный текст, но на ярком зелёном он выглядит грязно. Чтобы белый читался, мелкий текст на пропуске сделан плотнее.</li>
+      <li><b>Заголовки — Lebowski, всё остальное — SF Pro.</b> Характер ровно в одном месте — там, где он не мешает читать и нажимать.</li>
+    </ul>
+
+    <h3>Черновик → финал</h3>
+    <p>Первый черновик интерфейса я собрал в коде вместе с ИИ — так быстрее проверить логику на живом прототипе. Потом довёл интерфейс руками в Figma. Ниже три экрана, где разница заметнее всего. Черновик и промежуточные поиски остались в Figma на странице «Архив · черновик и поиски».</p>
+  </div>
+  <div class="pairs" id="pairs">
+    <figure class="pair">
+      <div class="pair-shots">
+        <div class="pair-shot"><img src="img/ui/pair-plan-was.png" alt="Черновик плана: плашка с датой и временем сверху, стрелки на проездах, кнопка на всю ширину" loading="lazy" width="723" height="1568"><span>Черновик</span></div>
+        <div class="pair-shot"><img src="img/ui/pair-plan-now.png" alt="Финал плана: время у кнопки в шторке, этажи внизу карты, тонкая линия пути" loading="lazy" width="723" height="1568"><span>Финал</span></div>
+      </div>
+      <figcaption>
+        <h4>План</h4>
+        <ul>
+          <li><b>Дата и время переехали из плашки над планом в шторку</b> — рамкой рядом с «Забронировать». Всё, что человек подтверждает, теперь у кнопки.</li>
+          <li><b>Этажи — маленький переключатель внизу карты.</b> Сверху ничего нет, поэтому план одной высоты с бронью и без и не прыгает.</li>
+          <li><b>Стрелки на каждом проезде заменила тонкая линия пути:</b> точка на въезде, стрелка на выезде. План перестал рябить.</li>
+          <li><b>Номер места и этаж — крупно, заголовочным шрифтом:</b> их ищут глазами. Синий стал ярче.</li>
+        </ul>
+      </figcaption>
+    </figure>
+    <figure class="pair">
+      <div class="pair-shots">
+        <div class="pair-shot"><img src="img/ui/pair-time-was.png" alt="Черновик шторки даты и времени: график без подписей" loading="lazy" width="723" height="1568"><span>Черновик</span></div>
+        <div class="pair-shot"><img src="img/ui/pair-time-now.png" alt="Финал шторки даты и времени: у графика подпись, выбранные часы на подложке с числом мест" loading="lazy" width="723" height="1568"><span>Финал</span></div>
+      </div>
+      <figcaption>
+        <h4>Дата и время</h4>
+        <ul>
+          <li><b>У графика появились подпись «Свободно мест по часам» и пометка «ваше время».</b> Без них столбики приходилось разгадывать.</li>
+          <li><b>Выбранные часы — на подложке, над ними число:</b> столько мест свободно на всё выбранное время, а не в самый удачный час.</li>
+          <li><b>Между блоками больше воздуха:</b> день, время и график читаются как три шага.</li>
+        </ul>
+      </figcaption>
+    </figure>
+    <figure class="pair">
+      <div class="pair-shots">
+        <div class="pair-shot"><img src="img/ui/pair-ticket-was.png" alt="Черновик пропуска: зелёная только шапка, маленький QR, отмена сразу под карточкой" loading="lazy" width="723" height="1568"><span>Черновик</span></div>
+        <div class="pair-shot"><img src="img/ui/pair-ticket-now.png" alt="Финал пропуска: весь экран зелёный, крупный QR, билет с линией отрыва, отмена внизу" loading="lazy" width="723" height="1568"><span>Финал</span></div>
+      </div>
+      <figcaption>
+        <h4>Пропуск</h4>
+        <ul>
+          <li><b>Весь экран зелёный:</b> у ворот пропуск отличается от остального приложения с первого взгляда.</li>
+          <li><b>Место и этаж — крупно по центру:</b> это первое, что ищешь в гараже.</li>
+          <li><b>QR вырос почти вдвое</b> — считыватель берёт его с расстояния.</li>
+          <li><b>Карточка стала билетом с линией отрыва, отмена ушла вниз экрана</b> — подальше от QR.</li>
+        </ul>
+      </figcaption>
+    </figure>
+  </div>
+  <div class="col">
+    <p class="cta" style="margin-top:28px"><a class="btn dark" href="/">Открыть прототип</a><a class="btn light" href="https://www.figma.com/design/tjjwIfvxjuazKVu1I8k8AM/Triiibe-Assignment?node-id=41-7291" target="_blank" rel="noopener">Макеты в Figma</a></p>
+  </div>
+</section>
+
+<section id="assumptions">
+  <div class="col">
+    <h2>08. Допущения</h2>
+    <p>Чего нет в задании и что я принял, чтобы двигаться дальше. Каждое допущение меняет конкретный экран.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <tr><th>Допущение</th><th>Что меняет</th></tr>
+      <tr><td>Въезд — по QR с экрана пропуска</td><td>На пропуске блок въезда с QR для охраны или считывателя. Два других варианта отличаются только этим блоком: номер машины, который узнаёт камера, и кнопка «Открыть шлагбаум».</td></tr>
+      <tr><td>Въезд — за 15 минут до начала, брони одного места не встык</td><td>К брони на 9:00 приезжают без десяти девять — это обычное утро, а не исключение. Если пускать строго с 9:00, каждое утро кто-то ждёт у шлагбаума. Если пускать раньше, но разрешить брони встык, человек приедет на место, которое до 9:00 ещё чьё-то. Поэтому между бронями одного места те же 15 минут. Цена: если утренняя бронь заканчивается в 10:00, следующая на это место — с 10:30, потому что шаг 30 минут. Подсказка на плане так и пишет: «можно взять с 10:30».</td></tr>
+      <tr><td>Пропуск хранится в телефоне</td><td>QR сохраняется в момент брони и открывается по часам телефона — под землёй связь не нужна. «Открыть шлагбаум» без связи не сработает, поэтому основной вариант — QR.</td></tr>
+      <tr><td>На экране пропуска яркость на максимум</td><td>Считыватель должен прочитать QR с первого раза, даже если экран у человека приглушён. Так делают посадочные и билеты в Wallet.</td></tr>
+      <tr><td>Парковка для сотрудников бесплатная</td><td>Нет цены и оплаты, подтверждение — в один тап. Держать место на время оплаты не нужно.</td></tr>
+      <tr><td>Выход в здание — у ворот</td><td>От этого зависит, какое место «ближе к выходу» при подборе.</td></tr>
+      <tr><td>Бронь — внутри одного дня, с 7:00 до 22:00, шаг 30 минут</td><td>Время «с — до» в пределах дня, минимум час — по заданию.</td></tr>
+      <tr><td>Второй этаж устроен так же, как первый</td><td>Один план на оба этажа. На −2 этаж въезжают через те же ворота и спускаются по пандусу — это есть в шагах «Как доехать».</td></tr>
+      <tr><td>Активная бронь — будущая или та, что идёт сейчас</td><td>Пока она есть, модуль открывается планом с зелёным местом и карточкой брони. Тап по другому месту напоминает, что бронь может быть одна.</td></tr>
+      <tr><td>Все места одинаковые</td><td>У мест нет особенностей вроде «широкое» или «с зарядкой для электромобиля». Поэтому на плане и в брони только номер и этаж, а выбирают место по тому, где оно стоит.</td></tr>
+      <tr><td>Закрытое место закрыто на известный срок</td><td>Поэтому подсказка называет дату: «Место закрыто до 5 окт».</td></tr>
+      <tr><td>Место обозначается номером и этажом: «Место 17, −1 этаж»</td><td>Номер крупно на плане, в брони и на пропуске, этаж — рядом серым. Номера идут по ходу движения, от ворот.</td></tr>
+      <tr><td>Место не держится на время подтверждения</td><td>Поэтому экран «Место заняли» обязателен.</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="tests">
+  <div class="col">
+    <h2>09. Что проверить на людях</h2>
+    <p>Самые рискованные места решения — и как понять, что они работают.</p>
+  </div>
+  <div class="tbl">
+    <table>
+      <tr><th>Что проверяем</th><th>Как</th><th>Признак, что работает</th></tr>
+      <tr><td>Различают ли «занято», «закрыто» и «выбрано»</td><td>5 человек, задание на плане: «займи свободное место ближе к въезду».</td><td>4 из 5 выбирают свободное место с первого раза и своими словами объясняют разницу.</td></tr>
+      <tr><td>Понятен ли экран «Место заняли»</td><td>5 человек, в сценарии подстроен конфликт перед подтверждением.</td><td>Никто не думает, что бронь создана. Большинство берёт предложенное соседнее место.</td></tr>
+      <tr><td>Читается ли загрузка по столбикам</td><td>5 человек в шторке даты и времени: «выбери время, когда место точно будет».</td><td>4 из 5 выбирают часы, где места есть, без объяснений. Если нет — подписываю число над каждым столбиком.</td></tr>
+      <tr><td>Берут ли подобранное место</td><td>После запуска: доля броней, где предложенное место не меняли.</td><td>Если место чаще меняют, чем берут, подбор выбирает не то — пересматриваю правило.</td></tr>
+      <tr><td>Находят ли место по плану без «Как доехать»</td><td>5 человек: показать план с зелёным местом, потом пройти от ворот до места — на макете или на настоящей парковке.</td><td>4 из 5 доходят до места без «Как доехать». Если нет — выношу кнопку заметнее, прямо в карточку брони.</td></tr>
+      <tr><td>Как быстро достают пропуск у ворот</td><td>Задание с телефоном в руке: «ты у ворот, покажи пропуск охране».</td><td>Меньше 5 секунд от открытия приложения до QR, никто не ищет пропуск в меню. Если дольше — открываю пропуск сразу, когда въезд уже открыт.</td></tr>
+      <tr><td>Не простаивают ли места из-за броней «на всякий случай»</td><td>Парковка бесплатная, поэтому люди бронируют с запасом и потом не приезжают. Место весь день пустое, а коллега в это время не нашёл, где встать. После запуска считаю, сколько броней закончились без въезда.</td><td>Таких броней мало. Если много — место освобождается само, когда человек не въехал в первый час брони: так делают офисные парковки.</td></tr>
+      <tr><td>Освобождают ли место, когда уезжают раньше</td><td>После запуска: сколько идущих броней освободили раньше конца и сколько из этих мест потом взяли коллеги.</td><td>Кнопкой пользуются, и освобождённые места находят новых хозяев. Если нет — напоминание на выезде: «Уезжаете? Освободите место для коллег».</td></tr>
+    </table>
+  </div>
+</section>
+
+<div aria-hidden="true" style="height:120px"></div>
+
+<script>
+// Кадры: слайд — один экран в одном состоянии на компьютере и на телефоне.
+// Под кадром по центру: подпись к тому, что на экране, ниже — переключатель платформы и «‹ 1 / 4 ›»
+document.querySelectorAll('.media').forEach((box) => {
+  const slides = JSON.parse(box.dataset.slides)
+  const both = slides.some((x) => x.d) && slides.some((x) => x.m)
+  let view = box.dataset.view || (slides[0].d ? 'd' : 'm')
+  let i = 0
+  box.innerHTML = '<div class="stage" tabindex="0"></div><div class="mfoot"><p class="mcap"></p><div class="ctrl"></div></div>'
+  const stage = box.querySelector('.stage')
+  const ctrl = box.querySelector('.ctrl')
+  const cap = box.querySelector('.mcap')
+  const imgs = slides.map((x) => {
+    const pair = {}
+    for (const v of ['d', 'm']) {
+      if (!x[v]) continue
+      const im = document.createElement('img')
+      im.src = 'img/' + x[v]
+      im.alt = v === 'd' ? x.cd : x.cm
+      im.loading = 'lazy'
+      if (v === 'm' || x.ph) im.className = 'ph'
+      stage.appendChild(im)
+      pair[v] = im
+    }
+    return pair
+  })
+  const btn = (text, aria) => {
+    const b = document.createElement('button')
+    b.type = 'button'
+    b.textContent = text
+    b.setAttribute('aria-label', aria)
+    return b
+  }
+  const seg = document.createElement('div')
+  seg.className = 'seg'
+  const segBtns = {}
+  if (both) {
+    ;[['d', 'Компьютер'], ['m', 'Телефон']].forEach(([v, t]) => {
+      const b = btn(t, t)
+      b.onclick = () => {
+        view = v
+        render()
+      }
+      seg.appendChild(b)
+      segBtns[v] = b
+    })
+    ctrl.appendChild(seg)
+  }
+  const pager = document.createElement('div')
+  pager.className = 'pager'
+  const prev = btn('‹', 'Предыдущий кадр')
+  const next = btn('›', 'Следующий кадр')
+  const count = document.createElement('span')
+  pager.append(prev, count, next)
+  if (slides.length > 1) ctrl.appendChild(pager)
+  function render() {
+    i = (i + slides.length) % slides.length
+    const x = slides[i]
+    const v = x[view] ? view : view === 'd' ? 'm' : 'd'
+    imgs.forEach((pair, k) => {
+      for (const key in pair) pair[key].classList.toggle('on', k === i && key === v)
+    })
+    cap.textContent = v === 'd' ? x.cd : x.cm
+    count.textContent = i + 1 + ' / ' + slides.length
+    for (const key in segBtns) {
+      segBtns[key].classList.toggle('on', key === v)
+      segBtns[key].disabled = !x[key]
+    }
+  }
+  prev.onclick = () => {
+    i--
+    render()
+  }
+  next.onclick = () => {
+    i++
+    render()
+  }
+  stage.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') next.onclick()
+    if (e.key === 'ArrowLeft') prev.onclick()
+  })
+  let x0 = null
+  stage.addEventListener('pointerdown', (e) => {
+    x0 = e.clientX
+  })
+  stage.addEventListener('pointerup', (e) => {
+    if (x0 !== null && Math.abs(e.clientX - x0) > 40) {
+      i += e.clientX < x0 ? 1 : -1
+      render()
+    }
+    x0 = null
+  })
+  render()
+})
+</script>
+<script>
+  (() => {
+    const links = [...document.querySelectorAll('.cnav li a')]
+    links.forEach((a) => { a.innerHTML = '<span>' + a.innerHTML + '</span>' })
+    const ids = links.map((a) => a.dataset.id).filter((id) => id !== 'top')
+    const sync = () => {
+      const line = window.innerHeight * 0.3
+      let cur = 'top'
+      for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el && el.getBoundingClientRect().top <= line) cur = id
+      }
+      links.forEach((a) => {
+        const on = a.dataset.id === cur
+        a.classList.toggle('on', on)
+        if (on) a.setAttribute('aria-current', 'location')
+        else a.removeAttribute('aria-current')
+      })
+    }
+    sync()
+    addEventListener('scroll', sync, { passive: true })
+    addEventListener('resize', sync)
+  })()
+</script>
+<script>
+  // Музыка: один запуск снимает подсказку навсегда, пауза лишь останавливает бегущую строку
+  ;(() => {
+    const w = document.querySelector('.tune')
+    if (!w) return
+    const a = w.querySelector('audio')
+    const b = w.querySelector('.tune-btn')
+    const vol = w.querySelector('.tune-vol')
+    let v = 60
+    let before = 60
+    const setVol = (n) => {
+      v = Math.round(Math.max(0, Math.min(100, n)))
+      a.volume = v / 100
+      vol.style.setProperty('--v', v)
+      vol.setAttribute('aria-valuenow', String(v))
+      vol.classList.toggle('mute', v === 0)
+      vol.classList.toggle('low', v > 0 && v < 45)
+    }
+    setVol(60)
+    // Угол от верхней точки по часовой → громкость; через верх не перескакиваем
+    const fromPointer = (e) => {
+      const r = vol.getBoundingClientRect()
+      const dx = e.clientX - (r.left + r.width / 2)
+      const dy = e.clientY - (r.top + r.height / 2)
+      let n = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360 / 3.6
+      if (Math.abs(n - v) > 50) n = v > 50 ? 100 : 0
+      setVol(n)
+    }
+    let drag = false
+    vol.addEventListener('pointerdown', (e) => {
+      const r = vol.getBoundingClientRect()
+      const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2))
+      if (d < 11) {
+        if (v > 0) { before = v; setVol(0) } else setVol(before || 60)
+        return
+      }
+      drag = true
+      vol.setPointerCapture(e.pointerId)
+      fromPointer(e)
+    })
+    vol.addEventListener('pointermove', (e) => { if (drag) fromPointer(e) })
+    vol.addEventListener('pointerup', () => { drag = false })
+    vol.addEventListener('pointercancel', () => { drag = false })
+    vol.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { setVol(v + 5); e.preventDefault() }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { setVol(v - 5); e.preventDefault() }
+    })
+    vol.addEventListener('wheel', (e) => { setVol(v + (e.deltaY < 0 ? 5 : -5)); e.preventDefault() }, { passive: false })
+    b.addEventListener('click', () => { if (a.paused) a.play().catch(() => {}); else a.pause() })
+    a.addEventListener('play', () => { w.classList.add('started', 'on'); b.setAttribute('aria-label', 'Пауза') })
+    a.addEventListener('pause', () => { w.classList.remove('on'); b.setAttribute('aria-label', 'Включить музыку') })
+  })()
+</script>
+</body>
+</html>
